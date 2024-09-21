@@ -1,0 +1,49 @@
+name: Build and deploy to server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  docker:
+    name: Create docker image and push to registry, then start image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Pull image and run container with .env variables from secrets
+        uses: appleboy/ssh-action@v0.1.6
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          PASSWORD: ${{ secrets.SSH_PASSWORD }}
+        with:
+          host: 82.97.240.200
+          username: root
+          port: 22
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            if [ ! -d "/root/server" ]; then 
+              echo "Directory /root/server does not exist. Cloning repository..."
+              git clone https://github.com/erfrost/playreal-backend.git /root/server 
+            fi
+
+            cd /root/server && git pull origin main &&
+
+            CONTAINER_ID=$(docker ps -q --filter "name=server") &&
+
+            if [ ! -z "$CONTAINER_ID" ]; then 
+              echo "Stopping existing container..." &&
+              docker stop "$CONTAINER_ID" || true; 
+
+              echo "Removing existing container..." &&
+              docker rm "$CONTAINER_ID" || true; 
+            fi &&  
+
+            echo "Building new Docker image..." &&
+            docker build -t server . || true &&  
+
+            echo "Running new Docker container..." &&
+            docker run -d --name server -p 8000:8000 server &&  
+
+             echo "Cleaning up dangling images..." &&
+             docker image prune --filter="dangling=true" -f
