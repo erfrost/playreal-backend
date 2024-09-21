@@ -17,7 +17,7 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           PASSWORD: ${{ secrets.SSH_PASSWORD }}
         with:
-          host: 82.97.240.200
+          host: 147.45.168.75
           username: root
           port: 22
           password: ${{ secrets.SSH_PASSWORD }}
