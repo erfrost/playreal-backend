@@ -9,7 +9,7 @@ const STRIPE_SECRET_KEY: string = process.env.STRIPE_SECRET_KEY as string;
 const WEBHOOK_SECRET_KEY: string = process.env.WEBHOOK_SECRET_KEY as string;
 
 const stripe = new Stripe(STRIPE_SECRET_KEY as string);
-
+//
 router.post("/", async (req, res) => {
   try {
     const session: Stripe.Checkout.Session =
