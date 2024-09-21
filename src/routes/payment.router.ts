@@ -59,30 +59,26 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
-// Webhook endpoint
-router.post("/webhook", async (req, res) => {
-  const sig: string = req.headers["stripe-signature"] as string;
+router.post(
+  "/webhook",
+  express.json({ type: "application/json" }),
+  (req, res) => {
+    const event = req.body;
 
-  let event;
+    console.log("event: ", event, " :event");
 
-  try {
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      WEBHOOK_SECRET_KEY as string
-    );
-  } catch (err: any) {
-    console.log(`Webhook Error: ${err.message}`);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    switch (event.type) {
+      case "payment_intent.succeeded":
+        const paymentIntent = event.data.object;
+        break;
+      case "payment_method.attached":
+        const paymentMethod = event.data.object;
+        break;
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+
+    res.json({ received: true });
   }
-  console.log("event: ", event, " :event");
-  // Handle the checkout.session.completed event
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-    console.log("Payment was successful!", session);
-  }
-
-  res.status(200).json({ received: true });
-});
-
+);
 export default router;
