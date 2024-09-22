@@ -112,7 +112,7 @@ router.post("/", authMiddleware, async (req, res) => {
 
     console.log(session);
 
-    res.status(200).send({ status: "success" });
+    res.status(200).send({ payment_url: session.url });
   } catch (error) {
     console.log(error);
     res
