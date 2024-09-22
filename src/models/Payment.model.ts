@@ -13,14 +13,27 @@ const schema = new Schema(
     },
     items: [
       {
-        type: Types.ObjectId,
-        ref: "Service",
-        required: true,
+        serviceId: {
+          type: String,
+          required: true,
+        },
+        name: {
+          type: String,
+          required: true,
+        },
+        image: {
+          type: String,
+          required: true,
+        },
+        amount: {
+          type: Number,
+          required: true,
+        },
       },
     ],
     status: {
       type: String,
-      enum: ["pending", "paid", "failed", "refunded", "canceled"],
+      enum: ["Waiting for payment", "paid"],
       required: true,
     },
   },

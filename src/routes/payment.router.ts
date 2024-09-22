@@ -4,6 +4,8 @@ import Stripe from "stripe";
 import authMiddleware from "../middleware/auth.middleware";
 import { RequestWithUser } from "../interfaces";
 import PaymentModel from "../models/Payment.model";
+import { calculateRangePrice } from "../utils/calculateRangeInput";
+import ServiceModel from "../models/Service.model";
 dotenv.config();
 
 const router: Router = express.Router({ mergeParams: true });
@@ -16,37 +18,82 @@ const stripe = new Stripe(STRIPE_SECRET_KEY as string);
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const user = (req as RequestWithUser).user;
+    const { items } = req.body;
+
+    const formattedItems = await Promise.all(
+      items.map(async (item: any) => {
+        const currentService = await ServiceModel.findById(item.serviceId);
+        if (!currentService) return null;
+
+        const ratingRangePrice: number = Math.ceil(
+          currentService.basePrice +
+            calculateRangePrice(
+              item.ratingRange[0],
+              item.ratingRange[1],
+              currentService.baseMmrPrice,
+              currentService.coefficientMmr
+            )
+        );
+        const additionalsPrice: number = Math.ceil(
+          item.additionals.reduce(
+            (acc: number, additional: any) => acc + additional.price,
+            0
+          )
+        );
+
+        const totalAmount: number = ratingRangePrice + additionalsPrice;
+
+        const description: string = `${item.ratingRange[0]} - ${
+          item.ratingRange[1]
+        } ${item.additionals.map((additional: any) => " " + additional.title)}`;
+
+        console.log(totalAmount);
+
+        return {
+          serviceId: item.serviceId,
+          name: currentService.name,
+          description,
+          image: currentService.backgroundCard,
+          amount: totalAmount,
+        };
+      })
+    );
+
+    const amount: number = formattedItems.reduce(
+      (acc: number, item: any) => acc + item.amount,
+      0
+    );
+
+    console.log(formattedItems, amount);
+
+    const newPayment = await PaymentModel.create({
+      userId: user._id,
+      amount,
+      items: formattedItems,
+      status: "Waiting for payment",
+    });
 
     const session: Stripe.Checkout.Session =
       await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
-        line_items: [
-          {
-            price_data: {
-              currency: "rub",
-              product_data: {
-                name: "product name",
-              },
-              unit_amount: 5000,
+        line_items: formattedItems.map((item: any) => ({
+          price_data: {
+            currency: "rub",
+            product_data: {
+              name: item.name,
+              description: item.description,
+              images: [item.image],
             },
-            quantity: 1,
+            unit_amount: item.amount * 100,
           },
-          {
-            price_data: {
-              currency: "rub",
-              product_data: {
-                name: "product name",
-              },
-              unit_amount: 5000,
-            },
-            quantity: 1,
-          },
-        ],
+          quantity: 1,
+        })),
         mode: "payment",
         success_url: "http://147.45.168.75:3000/complete",
         cancel_url: "http://147.45.168.75:3000/cancel",
         metadata: {
-          userId: user._id,
+          userId: user._id.toString(),
+          paymentId: newPayment._id.toString(),
         },
       });
 
@@ -70,18 +117,23 @@ router.post(
       if (!data) {
         return res.status(500).json({ message: "При оплате произошла ошибка" });
       }
-      console.log("line items: ", data.line_items);
-      const { userId } = data.metadata;
+
+      const { userId, paymentId } = data.metadata;
       const amount = data.amount_total;
 
-      const newPayment = await PaymentModel.create({
-        userId,
-        amount,
-        items: [],
-        status: data.payment_status,
-      });
+      const currentPayment = await PaymentModel.findById(paymentId);
+      if (!currentPayment) {
+        return res
+          .status(500)
+          .json({ message: "Транзакция не найдена, обратитесь в поддержку" });
+      }
 
-      res.status(200).json(newPayment);
+      currentPayment.status = data.payment_status;
+      await currentPayment.save();
+
+      console.log(currentPayment);
+
+      res.status(200).json({ status: "success" });
     } catch (error) {
       console.log(error);
       res
