@@ -326,7 +326,7 @@ router.post("/signIn", async (req, res) => {
 
     const isPasswordEqual = await bcrypt.compare(
       password,
-      currentUser.password
+      currentUser.password as string
     );
     if (!isPasswordEqual) {
       return res.status(201).send({

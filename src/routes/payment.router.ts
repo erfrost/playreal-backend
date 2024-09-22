@@ -3,6 +3,7 @@ import * as dotenv from "dotenv";
 import Stripe from "stripe";
 import authMiddleware from "../middleware/auth.middleware";
 import { RequestWithUser } from "../interfaces";
+import PaymentModel from "../models/Payment.model";
 dotenv.config();
 
 const router: Router = express.Router({ mergeParams: true });
@@ -11,7 +12,7 @@ const STRIPE_SECRET_KEY: string = process.env.STRIPE_SECRET_KEY as string;
 const WEBHOOK_SECRET_KEY: string = process.env.WEBHOOK_SECRET_KEY as string;
 
 const stripe = new Stripe(STRIPE_SECRET_KEY as string);
-//
+
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const user = (req as RequestWithUser).user;
@@ -62,23 +63,22 @@ router.post("/", authMiddleware, async (req, res) => {
 router.post(
   "/webhook",
   express.json({ type: "application/json" }),
-  (req, res) => {
-    const event = req.body;
+  async (req, res) => {
+    const data = req.body.data.object;
 
-    console.log("event: ", event, " :event");
+    const { userId, items } = data.metadata;
+    const amount = data.amount_total;
 
-    switch (event.type) {
-      case "payment_intent.succeeded":
-        const paymentIntent = event.data.object;
-        break;
-      case "payment_method.attached":
-        const paymentMethod = event.data.object;
-        break;
-      default:
-        console.log(`Unhandled event type ${event.type}`);
+    console.log(userId, amount);
+
+    if (data.data.object.payment_status === "paid") {
+      const newPayment = await PaymentModel.create({
+        userId,
+        amount,
+        items: [],
+      });
     }
-
-    res.json({ received: true });
+    res.json(data);
   }
 );
 export default router;

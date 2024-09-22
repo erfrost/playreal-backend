@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, Types, model } from "mongoose";
 
 const schema = new Schema(
   {
@@ -39,6 +39,13 @@ const schema = new Schema(
     lastOnlineDate: {
       type: String,
     },
+    payments: [
+      {
+        type: Types.ObjectId,
+        ref: "Payment",
+        required: true,
+      },
+    ],
   },
   { timestamps: true }
 );
