@@ -19,6 +19,7 @@ router.post("/", authMiddleware, async (req, res) => {
 
     const session: Stripe.Checkout.Session =
       await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
         line_items: [
           {
             price_data: {
@@ -69,7 +70,7 @@ router.post(
       if (!data) {
         return res.status(500).json({ message: "При оплате произошла ошибка" });
       }
-      console.log("data: ", data, req.body.data);
+      console.log("line items: ", data.line_items);
       const { userId } = data.metadata;
       const amount = data.amount_total;
 
