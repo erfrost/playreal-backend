@@ -64,21 +64,31 @@ router.post(
   "/webhook",
   express.json({ type: "application/json" }),
   async (req, res) => {
-    const data = req.body.data.object;
+    try {
+      const data = req.body.data?.object;
+      if (!data) {
+        return res.status(500).json({ message: "При оплате произошла ошибка" });
+      }
 
-    const { userId, items } = data.metadata;
-    const amount = data.amount_total;
+      const { userId, items } = data.metadata;
+      const amount = data.amount_total;
 
-    console.log(userId, amount);
+      console.log(userId, amount);
 
-    if (data.data.object.payment_status === "paid") {
-      const newPayment = await PaymentModel.create({
-        userId,
-        amount,
-        items: [],
-      });
+      if (data.data.object.payment_status === "paid") {
+        const newPayment = await PaymentModel.create({
+          userId,
+          amount,
+          items: [],
+        });
+      }
+      res.status(200).json(data);
+    } catch (error) {
+      console.log(error);
+      res
+        .status(500)
+        .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
     }
-    res.json(data);
   }
 );
 export default router;
