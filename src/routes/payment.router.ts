@@ -69,7 +69,7 @@ router.post(
       if (!data) {
         return res.status(500).json({ message: "При оплате произошла ошибка" });
       }
-
+      console.log("data: ", data);
       const { userId } = data.metadata;
       const amount = data.amount_total;
 
