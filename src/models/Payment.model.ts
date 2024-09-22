@@ -29,6 +29,30 @@ const schema = new Schema(
           type: Number,
           required: true,
         },
+        ratingRange: {
+          type: [Number],
+          required: true,
+        },
+        additionals: [
+          {
+            _id: {
+              type: Types.ObjectId,
+              required: true,
+            },
+            title: {
+              type: String,
+              required: true,
+            },
+            price: {
+              type: Number,
+              required: true,
+            },
+            days: {
+              type: Number,
+              required: true,
+            },
+          },
+        ],
       },
     ],
     status: {

@@ -6,12 +6,12 @@ import { RequestWithUser } from "../interfaces";
 import PaymentModel from "../models/Payment.model";
 import { calculateRangePrice } from "../utils/calculateRangeInput";
 import ServiceModel from "../models/Service.model";
+import OfferModel from "../models/Offer.model";
 dotenv.config();
 
 const router: Router = express.Router({ mergeParams: true });
 
 const STRIPE_SECRET_KEY: string = process.env.STRIPE_SECRET_KEY as string;
-const WEBHOOK_SECRET_KEY: string = process.env.WEBHOOK_SECRET_KEY as string;
 
 const stripe = new Stripe(STRIPE_SECRET_KEY as string);
 
@@ -54,6 +54,8 @@ router.post("/", authMiddleware, async (req, res) => {
           name: currentService.name,
           description,
           image: currentService.backgroundCard,
+          ratingRange: item.ratingRange,
+          additionals: item.additionals,
           amount: totalAmount,
         };
       })
@@ -119,7 +121,6 @@ router.post(
       }
 
       const { userId, paymentId } = data.metadata;
-      const amount = data.amount_total;
 
       const currentPayment = await PaymentModel.findById(paymentId);
       if (!currentPayment) {
@@ -131,7 +132,24 @@ router.post(
       currentPayment.status = data.payment_status;
       await currentPayment.save();
 
-      console.log(currentPayment);
+      const newOffers = await Promise.all(
+        currentPayment.items.map(async (item: any) => {
+          const currentService = await ServiceModel.findOne({
+            _id: item.serviceId,
+          }).select("gameId");
+
+          await OfferModel.create({
+            userId,
+            serviceId: item.serviceId,
+            gameId: currentService?.gameId,
+            ratingRange: item.ratingRange,
+            additionals: item.additionals || [],
+            status: "Pending",
+          });
+        })
+      );
+
+      console.log(newOffers);
 
       res.status(200).json({ status: "success" });
     } catch (error) {
