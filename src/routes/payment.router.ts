@@ -56,7 +56,9 @@ router.post("/", authMiddleware, async (req, res) => {
 
         const description: string = `${item.ratingRange[0]} - ${
           item.ratingRange[1]
-        } ${item.additionals.map((additional: any) => " " + additional.title)}`;
+        }\n${item.additionals
+          .map((additional: any) => additional.title)
+          .join("\n")}`;
 
         console.log(totalAmount);
 
