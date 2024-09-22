@@ -54,13 +54,9 @@ router.post("/", authMiddleware, async (req, res) => {
 
         const totalAmount: number = ratingRangePrice + additionalsPrice;
 
-        // const description: string = `${item.ratingRange[0]} - ${
-        //   item.ratingRange[1]
-        // } ${item.additionals.map((additional: any) => " " + additional.title)}`;
         const description: string = `${item.ratingRange[0]} - ${
           item.ratingRange[1]
-        } \n
-        ${item.additionals.map((additional: any) => additional.title + "\n")}`;
+        } ${item.additionals.map((additional: any) => " " + additional.title)}`;
 
         return {
           serviceId: item.serviceId,
