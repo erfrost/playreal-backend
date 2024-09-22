@@ -18,6 +18,11 @@ const schema = new Schema(
         required: true,
       },
     ],
+    status: {
+      type: String,
+      enum: ["pending", "paid", "failed", "refunded", "canceled"],
+      required: true,
+    },
   },
   {
     timestamps: true,

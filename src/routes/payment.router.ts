@@ -65,24 +65,22 @@ router.post(
   express.json({ type: "application/json" }),
   async (req, res) => {
     try {
-      const data = req.body.data?.object;
+      const data = req.body.object;
       if (!data) {
         return res.status(500).json({ message: "При оплате произошла ошибка" });
       }
 
-      const { userId, items } = data.metadata;
+      const { userId } = data.metadata;
       const amount = data.amount_total;
 
-      console.log(userId, amount);
+      const newPayment = await PaymentModel.create({
+        userId,
+        amount,
+        items: [],
+        status: data.payment_status,
+      });
 
-      if (data.data.object.payment_status === "paid") {
-        const newPayment = await PaymentModel.create({
-          userId,
-          amount,
-          items: [],
-        });
-      }
-      res.status(200).json(data);
+      res.status(200).json(newPayment);
     } catch (error) {
       console.log(error);
       res
@@ -91,4 +89,5 @@ router.post(
     }
   }
 );
+
 export default router;
