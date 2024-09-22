@@ -113,7 +113,7 @@ router.post("/cartItemPrice", async (req, res) => {
       currentService.basePrice + rangePrice + additionalPrice
     );
 
-    res.status(200).json({ price: totalPrice, title: currentService.name });
+    res.status(200).json({ price: totalPrice, name: currentService.name });
   } catch {
     res
       .status(500)
