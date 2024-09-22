@@ -7,6 +7,7 @@ import PaymentModel from "../models/Payment.model";
 import { calculateRangePrice } from "../utils/calculateRangeInput";
 import ServiceModel from "../models/Service.model";
 import OfferModel from "../models/Offer.model";
+import UserModel from "../models/User.model";
 dotenv.config();
 
 const router: Router = express.Router({ mergeParams: true });
@@ -19,6 +20,16 @@ router.post("/", authMiddleware, async (req, res) => {
   try {
     const user = (req as RequestWithUser).user;
     const { items } = req.body;
+
+    const currentUser = await UserModel.findById(user._id);
+    if (!currentUser) {
+      return res.status(500).json({ message: "Пользователь не найден" });
+    }
+    if (currentUser.role !== "user") {
+      return res
+        .status(500)
+        .json({ message: "Создавать заказы бустеры не могут" });
+    }
 
     const formattedItems = await Promise.all(
       items.map(async (item: any) => {
@@ -91,8 +102,8 @@ router.post("/", authMiddleware, async (req, res) => {
           quantity: 1,
         })),
         mode: "payment",
-        success_url: "http://147.45.168.75:3000/complete",
-        cancel_url: "http://147.45.168.75:3000/cancel",
+        success_url: "http://147.45.168.75:3000/profile",
+        cancel_url: "http://147.45.168.75:3000",
         metadata: {
           userId: user._id.toString(),
           paymentId: newPayment._id.toString(),
