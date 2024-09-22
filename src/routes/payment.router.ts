@@ -65,11 +65,11 @@ router.post(
   express.json({ type: "application/json" }),
   async (req, res) => {
     try {
-      const data = req.body.object;
+      const data = req.body.data.object;
       if (!data) {
         return res.status(500).json({ message: "При оплате произошла ошибка" });
       }
-      console.log("data: ", data, req.body);
+      console.log("data: ", data, req.body.data);
       const { userId } = data.metadata;
       const amount = data.amount_total;
 
