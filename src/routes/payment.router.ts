@@ -80,8 +80,9 @@ router.post("/", authMiddleware, async (req, res) => {
     const newPayment = await PaymentModel.create({
       userId: user._id,
       amount,
+      type: "payment",
       items: formattedItems,
-      status: "Waiting for payment",
+      status: "cancelled",
     });
 
     const session: Stripe.Checkout.Session =
@@ -138,8 +139,10 @@ router.post(
           .json({ message: "Транзакция не найдена, обратитесь в поддержку" });
       }
 
-      currentPayment.status = data.payment_status;
-      await currentPayment.save();
+      if (data.payment_status === "paid") {
+        currentPayment.status = "success";
+        await currentPayment.save();
+      }
 
       const newOffers = await Promise.all(
         currentPayment.items.map(async (item: any) => {
@@ -169,5 +172,27 @@ router.post(
     }
   }
 );
+
+router.get("/all", authMiddleware, async (req, res) => {
+  try {
+    const user = (req as RequestWithUser).user;
+
+    const currentUser = await UserModel.findById(user._id);
+    if (!currentUser) {
+      return res.status(500).json({ message: "Пользователь не найден" });
+    }
+
+    const payments = await PaymentModel.find({
+      userId: currentUser._id,
+    });
+
+    res.status(200).send({ payments });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
+  }
+});
 
 export default router;
