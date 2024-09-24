@@ -39,13 +39,9 @@ const schema = new Schema(
     lastOnlineDate: {
       type: String,
     },
-    payments: [
-      {
-        type: Types.ObjectId,
-        ref: "Payment",
-        required: true,
-      },
-    ],
+    balance: {
+      type: Number,
+    },
   },
   { timestamps: true }
 );

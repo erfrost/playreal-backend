@@ -10,6 +10,7 @@ import {
   calculateRangePrice,
 } from "../utils/calculateRangeInput";
 import ChatModel from "../models/Chat.model";
+import PaymentModel from "../models/Payment.model";
 
 const router: Router = express.Router({ mergeParams: true });
 
@@ -36,6 +37,7 @@ interface Offer {
   ratingRange: number[];
   additionals: Additional[];
   status: "Pending" | "AtWork" | "Already";
+  boosterId?: string;
   createdAt: string;
   updatedAt: string;
   __v: number;
@@ -322,5 +324,135 @@ router.post("/accept", authMiddleware, async (req: Request, res: Response) => {
       .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
   }
 });
+
+router.post(
+  "/complete/booster",
+  authMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      const user = (req as RequestWithUser).user;
+      const offer: Offer = req.body.offer;
+
+      const booster = await UserModel.findById(user._id);
+      const client = await UserModel.findById(offer.userId);
+      if (!booster || !client) {
+        return res.status(404).json({ message: "Пользователь не найден" });
+      }
+      if (!(booster.role === "booster" && client.role === "user")) {
+        return res.status(404).json({ message: "Ошибка доступа" });
+      }
+
+      const currentOffer = await OfferModel.findById(offer._id);
+      if (!currentOffer) {
+        return res.status(404).json({ message: "Заказ не найден" });
+      }
+
+      const currentGame = await GameModel.findById(currentOffer.gameId);
+      const currentService = await ServiceModel.findById(
+        currentOffer.serviceId
+      );
+      if (!currentGame || !currentService) {
+        return res.status(404).json({ message: "Игра или услуга не найдены" });
+      }
+
+      currentOffer.status = "Review";
+      await currentOffer.save();
+
+      res.status(200).json({
+        offer: {
+          ...offer,
+          status: currentOffer.status,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      res
+        .status(500)
+        .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
+    }
+  }
+);
+
+router.post(
+  "/complete/user",
+  authMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      const user = (req as RequestWithUser).user;
+      const offer: Offer = req.body.offer;
+
+      const client = await UserModel.findById(user._id);
+      const booster = await UserModel.findById(offer.boosterId);
+      if (!client || !booster) {
+        return res.status(404).json({ message: "Пользователь не найден" });
+      }
+      if (!(booster.role === "booster" && client.role === "user")) {
+        return res.status(404).json({ message: "Ошибка доступа" });
+      }
+
+      const currentOffer = await OfferModel.findById(offer._id);
+      if (!currentOffer) {
+        return res.status(404).json({ message: "Заказ не найден" });
+      }
+
+      const currentGame = await GameModel.findById(currentOffer.gameId);
+      const currentService = await ServiceModel.findById(
+        currentOffer.serviceId
+      );
+      if (!currentGame || !currentService) {
+        return res.status(404).json({ message: "Игра или услуга не найдены" });
+      }
+
+      const rangeAmount: number = Math.ceil(
+        calculateRangePrice(
+          currentOffer.ratingRange[0],
+          currentOffer.ratingRange[1],
+          currentService!.baseMmrPrice,
+          currentService!.coefficientMmr
+        ) + currentService!.basePrice
+      );
+      const additionalsAmount: number = currentOffer.additionals.reduce(
+        (acc: number, additional: Additional) => acc + additional.price,
+        0
+      );
+      const totalAmount: number = rangeAmount + additionalsAmount;
+
+      const item = {
+        serviceId: currentService._id,
+        name: currentService.name,
+        image: currentService.backgroundCard,
+        amount: totalAmount,
+        ratingRange: currentOffer.ratingRange,
+        additionals: currentOffer.additionals,
+      };
+
+      await PaymentModel.create({
+        userId: booster._id,
+        amount: totalAmount,
+        type: "receiving",
+        items: [item],
+        status: "success",
+      });
+
+      booster.balance = (booster.balance ?? 0) + totalAmount;
+      await booster.save();
+
+      currentOffer.status = "Already";
+      await currentOffer.save();
+
+      res.status(200).json({
+        offer: {
+          ...offer,
+          status: currentOffer.status,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      res
+        .status(500)
+        .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
+    }
+  }
+);
 
 export default router;

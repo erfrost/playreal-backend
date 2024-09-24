@@ -156,6 +156,29 @@ router.get("/userId", authMiddleware, async (req: Request, res: Response) => {
   }
 });
 
+router.get("/balance", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const user = (req as RequestWithUser).user;
+
+    const currentUser = await UserModel.findOne({
+      _id: user._id,
+    }).select("role balance");
+
+    if (!currentUser) {
+      return res.status(400).json({ message: "Пользователь не найден" });
+    }
+
+    if (currentUser.role !== "booster") {
+      return res.status(400).json({ message: "Ошибка доступа" });
+    }
+
+    res.status(200).json({ balance: currentUser.balance });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error });
+  }
+});
+
 router.post(
   "/profile/update",
   authMiddleware,

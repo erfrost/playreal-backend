@@ -46,7 +46,7 @@ const schema = new Schema(
     ],
     status: {
       type: String,
-      enum: ["Pending", "AtWork", "Already"],
+      enum: ["Pending", "AtWork", "Review", "Already"],
       default: "Pending",
       required: true,
     },
