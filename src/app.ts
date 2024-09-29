@@ -4,7 +4,9 @@ import express, { Application } from "express";
 import routes from "./routes";
 import * as dotenv from "dotenv";
 import http from "http";
-import setupSocketIO from "./gateways/Chat/chat.gateway";
+import setupChatSocketIO from "./gateways/chat/chat.gateway";
+import { Server } from "socket.io";
+import setupSupportSocketIO from "./gateways/support/support.gateway";
 dotenv.config();
 
 const app: Application = express();
@@ -36,8 +38,17 @@ const PORT: string = process.env.PORT || "8000";
 async function start() {
   try {
     mongoose.connect(process.env.MONGOURI as string);
+
     const server: http.Server = http.createServer(app);
-    setupSocketIO(server);
+
+    const io: Server = new Server(server, {
+      cors: {
+        origin: "*",
+      },
+    });
+    setupChatSocketIO(io);
+    setupSupportSocketIO(io);
+
     console.log("mongoDB connected");
 
     server.listen(PORT, () => {

@@ -11,6 +11,7 @@ import {
 } from "../utils/calculateRangeInput";
 import ChatModel from "../models/Chat.model";
 import PaymentModel from "../models/Payment.model";
+import adminMiddleware from "../middleware/admin.middleware";
 
 const router: Router = express.Router({ mergeParams: true });
 
@@ -206,7 +207,7 @@ router.get("/personal", authMiddleware, async (req: Request, res: Response) => {
   }
 });
 
-router.post("/create", authMiddleware, async (req: Request, res: Response) => {
+router.post("/create", adminMiddleware, async (req: Request, res: Response) => {
   try {
     const user = (req as RequestWithUser).user;
     const services: CreateOfferPayload[] = req.body.services;

@@ -1,16 +1,11 @@
-import { Server, Socket } from "socket.io";
-import http from "http";
+import { Namespace, Server, Socket } from "socket.io";
 import { ChatService } from "./chat.service";
 import { MessageDto, ReadDto } from "../../interfaces";
 
-const setupSocketIO = (httpServer: http.Server) => {
-  const io: Server = new Server(httpServer, {
-    cors: {
-      origin: "*",
-    },
-  });
+const setupChatSocketIO = (io: Server) => {
+  const chatIo: Namespace = io.of("/chat");
 
-  io.on("connection", (client: Socket) => {
+  chatIo.on("connection", (client: Socket) => {
     const userId: string | undefined = client.handshake.query.userId as
       | string
       | undefined;
@@ -35,7 +30,7 @@ const setupSocketIO = (httpServer: http.Server) => {
     client.on("message", async (message: MessageDto) => {
       const senderId: string = client.handshake.query.userId as string;
 
-      const newMessage = await ChatService.sendMessage(
+      const newMessage = await ChatService.createMessage(
         client,
         senderId,
         message
@@ -57,7 +52,8 @@ const setupSocketIO = (httpServer: http.Server) => {
       await ChatService.readMessages(client, readDto);
     });
   });
-  return io;
+
+  return chatIo;
 };
 
-export default setupSocketIO;
+export default setupChatSocketIO;

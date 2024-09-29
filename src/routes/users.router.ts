@@ -9,6 +9,8 @@ import { Types } from "mongoose";
 import GameModel from "../models/Game.model";
 dotenv.config();
 
+const router: Router = express.Router({ mergeParams: true });
+
 interface ProfileUpdate {
   nickname: string;
   description: string;
@@ -16,8 +18,6 @@ interface ProfileUpdate {
   password?: string;
   games: Types.ObjectId[];
 }
-
-const router: Router = express.Router({ mergeParams: true });
 
 router.get("/all", async (req: Request, res: Response) => {
   try {

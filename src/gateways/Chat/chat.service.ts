@@ -93,7 +93,7 @@ export class ChatService {
     });
   }
 
-  static async sendMessage(
+  static async createMessage(
     client: Socket,
     senderId: string,
     message: MessageDto

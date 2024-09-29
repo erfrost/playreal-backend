@@ -1,6 +1,7 @@
 import express, { Router } from "express";
 import GameModel from "../models/Game.model";
 import ServiceModel from "../models/Service.model";
+import adminMiddleware from "../middleware/admin.middleware";
 
 const router: Router = express.Router({ mergeParams: true });
 
@@ -61,7 +62,7 @@ router.get("/by_id/:gameId", async (req, res) => {
   }
 });
 
-router.post("/create", async (req, res) => {
+router.post("/create", adminMiddleware, async (req, res) => {
   try {
     const { title, description, image } = req.body;
     if (!title || !description || !image) {

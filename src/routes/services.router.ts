@@ -2,6 +2,7 @@ import express, { Router } from "express";
 import ServiceModel from "../models/Service.model";
 import GameModel from "../models/Game.model";
 import { calculateRangePrice } from "../utils/calculateRangeInput";
+import adminMiddleware from "../middleware/admin.middleware";
 
 const router: Router = express.Router({ mergeParams: true });
 
@@ -121,7 +122,7 @@ router.post("/cartItemPrice", async (req, res) => {
   }
 });
 
-router.post("/create/:gameId", async (req, res) => {
+router.post("/create/:gameId", adminMiddleware, async (req, res) => {
   try {
     const gameId: string | undefined = req.params.gameId;
     const {
