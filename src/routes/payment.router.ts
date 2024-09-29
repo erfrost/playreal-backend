@@ -9,6 +9,7 @@ import ServiceModel from "../models/Service.model";
 import OfferModel from "../models/Offer.model";
 import UserModel from "../models/User.model";
 import axios, { AxiosResponse } from "axios";
+import adminMiddleware from "../middleware/admin.middleware";
 dotenv.config();
 
 const router: Router = express.Router({ mergeParams: true });
@@ -358,6 +359,112 @@ router.post("/paypal/webhook", authMiddleware, async (req, res) => {
     res.status(200).send("Webhook received");
   } catch (error) {
     console.error(error);
+    return res.status(500).json({
+      message: "На сервере произошла ошибка. Попробуйте позже",
+    });
+  }
+});
+
+router.post("/withdrawal/create", authMiddleware, async (req, res) => {
+  try {
+    const { amount, address } = req.body;
+    const user = (req as RequestWithUser).user;
+
+    const currentUser = await UserModel.findById(user._id);
+    if (!currentUser) {
+      return res.status(500).json({ message: "Пользователь не найден" });
+    }
+    if (currentUser.role !== "booster" || !currentUser.balance) {
+      return res.status(500).json({ message: "Ошибка доступа" });
+    }
+    if (!amount || !address) {
+      return res.status(500).json({ message: "Не переданы некоторые данные" });
+    }
+
+    const amountNumber: number = Number(amount);
+    if (typeof amountNumber !== "number" || isNaN(amountNumber)) {
+      return res
+        .status(500)
+        .json({ message: "Сумма на вывод должна быть числом" });
+    }
+
+    console.log(amountNumber, currentUser.balance);
+    if (amountNumber > currentUser.balance) {
+      return res.status(500).json({ message: "Недостаточно средств" });
+    }
+
+    await PaymentModel.create({
+      name: "Вывод средств",
+      userId: currentUser._id,
+      amount: amountNumber,
+      address,
+      status: "pending",
+      type: "withdrawal",
+    });
+
+    res.status(200).send({ status: "success" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "На сервере произошла ошибка. Попробуйте позже",
+    });
+  }
+});
+
+router.post("/withdrawal/accept", adminMiddleware, async (req, res) => {
+  try {
+    const { paymentId } = req.body;
+
+    if (!paymentId) {
+      return res.status(500).json({ message: "Не передан paymentId" });
+    }
+
+    const currentPayment = await PaymentModel.findById(paymentId);
+    if (!currentPayment) {
+      return res.status(500).json({ message: "Транзакция не найдена" });
+    }
+
+    currentPayment.status = "success";
+    await currentPayment.save();
+
+    const currentUser = await UserModel.findById(currentPayment.userId);
+    if (!currentUser) {
+      return res.status(500).json({ message: "Пользователь не найден" });
+    }
+
+    currentUser.balance! -= currentPayment.amount;
+    await currentUser.save();
+
+    res.status(200).send({ payment: currentPayment });
+  } catch (error) {
+    return res.status(500).json({
+      message: "На сервере произошла ошибка. Попробуйте позже",
+    });
+  }
+});
+
+router.get("/withdrawal/all", adminMiddleware, async (req, res) => {
+  try {
+    const payments = await PaymentModel.find({
+      type: "withdrawal",
+    });
+
+    res.status(200).send({ payments });
+  } catch (error) {
+    return res.status(500).json({
+      message: "На сервере произошла ошибка. Попробуйте позже",
+    });
+  }
+});
+
+router.get("/withdrawal/pending", adminMiddleware, async (req, res) => {
+  try {
+    const payments = await PaymentModel.find({
+      type: "withdrawal",
+      status: "pending",
+    });
+    res.status(200).send({ payments });
+  } catch (error) {
     return res.status(500).json({
       message: "На сервере произошла ошибка. Попробуйте позже",
     });

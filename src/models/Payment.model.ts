@@ -16,6 +16,9 @@ const schema = new Schema(
       required: true,
       enum: ["payment", "withdrawal", "receiving"],
     },
+    address: {
+      type: String,
+    },
     items: [
       {
         serviceId: {
@@ -62,7 +65,7 @@ const schema = new Schema(
     ],
     status: {
       type: String,
-      enum: ["success", "cancelled"],
+      enum: ["success", "pending", "cancelled"],
       required: true,
     },
   },
