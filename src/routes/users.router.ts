@@ -91,7 +91,6 @@ router.get("/profile", authMiddleware, async (req: Request, res: Response) => {
 
     res.status(200).json({ user: currentUser });
   } catch (error: any) {
-    console.log(error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -109,7 +108,6 @@ router.get("/role", authMiddleware, async (req: Request, res: Response) => {
 
     res.status(200).json({ role: currentUser.role });
   } catch (error: any) {
-    console.log(error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -131,7 +129,6 @@ router.get(
 
       res.status(200).json({ user: currentUser });
     } catch (error) {
-      console.log(error);
       res.status(500).json({ message: error });
     }
   }
@@ -151,7 +148,6 @@ router.get("/userId", authMiddleware, async (req: Request, res: Response) => {
 
     res.status(200).json({ user_id: currentUser._id });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: error });
   }
 });
@@ -174,7 +170,6 @@ router.get("/balance", authMiddleware, async (req: Request, res: Response) => {
 
     res.status(200).json({ balance: currentUser.balance });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: error });
   }
 });
@@ -232,7 +227,6 @@ router.post(
 
       res.status(200).json({ user: currentUser });
     } catch (error) {
-      console.log(error);
       res.status(500).json({ message: error });
     }
   }

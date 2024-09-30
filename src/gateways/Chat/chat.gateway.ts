@@ -21,7 +21,6 @@ const setupChatSocketIO = (io: Server) => {
     }
 
     client.on("disconnect", () => {
-      console.log("disconnect");
       ChatService.updateOnlineStatus(io, client, userId, false);
       ChatService.removeClient(client.id);
       client.disconnect(true);

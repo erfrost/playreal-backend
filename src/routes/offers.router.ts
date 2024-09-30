@@ -110,7 +110,6 @@ router.post("/all", authMiddleware, async (req: Request, res: Response) => {
       offers: formattedOffers,
     });
   } catch (error: any) {
-    console.log(error);
     res
       .status(500)
       .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
@@ -200,7 +199,6 @@ router.get("/personal", authMiddleware, async (req: Request, res: Response) => {
       offers: formattedOffers,
     });
   } catch (error: any) {
-    console.log(error);
     res
       .status(500)
       .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
@@ -319,7 +317,6 @@ router.post("/accept", authMiddleware, async (req: Request, res: Response) => {
       chatId,
     });
   } catch (error) {
-    console.log(error);
     res
       .status(500)
       .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
@@ -366,7 +363,6 @@ router.post(
         },
       });
     } catch (error) {
-      console.log(error);
       res
         .status(500)
         .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
@@ -448,7 +444,6 @@ router.post(
         },
       });
     } catch (error) {
-      console.log(error);
       res
         .status(500)
         .json({ message: "На сервере произошла ошибка. Попробуйте позже" });

@@ -42,7 +42,6 @@ router.get("/", authMiddleware, async (req, res) => {
 
     res.status(200).json({ chats: formattedChats });
   } catch (error) {
-    console.log(error);
     res
       .status(500)
       .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
@@ -63,7 +62,6 @@ router.get("/chatId", authMiddleware, async (req, res) => {
 
     res.status(200).json({ chatId: currentChat._id });
   } catch (error) {
-    console.log(error);
     res
       .status(500)
       .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
@@ -94,7 +92,6 @@ router.get("/messages/:chatId", authMiddleware, async (req, res) => {
 
     res.status(200).json({ messages });
   } catch (error) {
-    console.log(error);
     res
       .status(500)
       .json({ message: "На сервере произошла ошибка. Попробуйте позже" });

@@ -18,7 +18,6 @@ const setupSupportSocketIO = (io: Server) => {
     }
 
     client.on("disconnect", () => {
-      console.log("disconnect");
       SupportService.removeClient(client.id);
       client.disconnect(true);
     });

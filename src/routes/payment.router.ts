@@ -33,9 +33,8 @@ router.get("/all", authMiddleware, async (req, res) => {
       userId: currentUser._id,
     });
 
-    res.status(200).send({ payments });
+    res.status(200).send({ payments: payments.reverse() });
   } catch (error) {
-    console.log(error);
     res
       .status(500)
       .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
@@ -101,8 +100,6 @@ router.post("/stripe", authMiddleware, async (req, res) => {
       0
     );
 
-    console.log(formattedItems, amount);
-
     const newPayment = await PaymentModel.create({
       userId: user._id,
       amount,
@@ -135,11 +132,8 @@ router.post("/stripe", authMiddleware, async (req, res) => {
         },
       });
 
-    console.log(session);
-
     res.status(200).send({ payment_url: session.url });
   } catch (error) {
-    console.log(error);
     res
       .status(500)
       .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
@@ -189,7 +183,6 @@ router.post(
 
       res.status(200).json({ status: "success" });
     } catch (error) {
-      console.log(error);
       res
         .status(500)
         .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
@@ -304,7 +297,6 @@ router.post("/paypal", authMiddleware, async (req, res) => {
     );
 
     if (approvalUrl) {
-      console.log(approvalUrl.href);
       return res.status(200).send({ payment_url: approvalUrl.href });
     } else {
       return res
@@ -312,7 +304,6 @@ router.post("/paypal", authMiddleware, async (req, res) => {
         .json({ message: "Ошибка создания ссылки на оплату" });
     }
   } catch (error: any) {
-    console.log(error);
     res
       .status(500)
       .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
@@ -337,7 +328,6 @@ router.post("/paypal/webhook", authMiddleware, async (req, res) => {
       currentPayment.status = "success";
       await currentPayment.save();
 
-      console.log(currentPayment.items);
       await Promise.all(
         currentPayment.items.map(async (item: any) => {
           const currentService = await ServiceModel.findOne({
@@ -388,7 +378,6 @@ router.post("/withdrawal/create", authMiddleware, async (req, res) => {
         .json({ message: "Сумма на вывод должна быть числом" });
     }
 
-    console.log(amountNumber, currentUser.balance);
     if (amountNumber > currentUser.balance) {
       return res.status(500).json({ message: "Недостаточно средств" });
     }

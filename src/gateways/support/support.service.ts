@@ -70,7 +70,6 @@ export class SupportService {
         });
       }
 
-      console.log(currentChat);
       if (!currentChat || !currentChat._id) {
         client.emit("error", "Чат не найден");
         return;
@@ -103,18 +102,15 @@ export class SupportService {
 
       const adminSocketId: string | undefined = this.getAdminSocketId();
 
-      console.log(adminSocketId, client.id, userId, this.#clients);
       // смску отправляет админ
       if (adminSocketId === client.id) {
         const userSocketId: string | undefined = this.getSocketId(userId);
-        console.log("userSocketId: ", userSocketId);
         if (!userSocketId) return;
 
         supportIo.to(userSocketId).emit("message", message);
       }
       // смску отправляет пользователь
       else {
-        console.log("adminSocketId: ", adminSocketId);
         if (!adminSocketId) return;
 
         supportIo.to(adminSocketId).emit("message", message);

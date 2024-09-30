@@ -60,7 +60,6 @@ router.post("/oauth/google-redirect", async (req, res) => {
 
     res.status(200).json({ url: authorizeUrl });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: error });
   }
 });
@@ -149,7 +148,6 @@ router.post("/oauth/discord-redirect", async (req, res) => {
       url: "https://discord.com/oauth2/authorize?client_id=1265396772293836851&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2FdiscordLogin&scope=email+openid+identify",
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: error });
   }
 });
@@ -301,7 +299,6 @@ router.post("/signUp", async (req, res) => {
 
     res.status(200).json({ userId: newUser._id, ...tokens });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: error });
   }
 });
@@ -339,7 +336,6 @@ router.post("/signIn", async (req, res) => {
 
     res.status(200).send({ ...tokens, userId: currentUser._id });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: error });
   }
 });
