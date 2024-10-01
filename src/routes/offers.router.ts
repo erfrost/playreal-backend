@@ -302,7 +302,7 @@ router.post("/accept", authMiddleware, async (req: Request, res: Response) => {
     } else {
       const newChat = await ChatModel.create({
         users: [client._id, booster._id],
-        unreadMessagesCount: 0,
+        lastMessage: "",
       });
 
       chatId = newChat._id.toString();

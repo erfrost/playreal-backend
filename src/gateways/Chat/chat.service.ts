@@ -1,4 +1,4 @@
-import { Server, Socket } from "socket.io";
+import { Namespace, Server, Socket } from "socket.io";
 import { MessageDto, ReadDto } from "../../interfaces";
 import ChatModel from "../../models/Chat.model";
 import MessageModel from "../../models/Message.model";
@@ -41,7 +41,7 @@ export class ChatService {
   }
 
   static async updateOnlineStatus(
-    io: Server,
+    chatIo: Namespace,
     client: Socket,
     userId: string,
     status: boolean
@@ -84,7 +84,7 @@ export class ChatService {
       const socketIds: string[] = this.getSocketIds(id);
 
       socketIds.map((socketId: string) =>
-        io.to(socketId).emit("onlineStatus", {
+        chatIo.to(socketId).emit("onlineStatus", {
           userId,
           onlineStatus: status,
           lastOnlineDate: new Date().toString(),
@@ -105,7 +105,7 @@ export class ChatService {
 
       const currentChat = await ChatModel.findOne({
         users: { $all: [senderId, recipientId] },
-      }).select("_id lastMessage unreadMessagesCount");
+      }).select("_id lastMessage");
 
       if (!currentChat || !currentChat._id) {
         client.emit("error", "Чат не найден");
@@ -127,7 +127,6 @@ export class ChatService {
         : files.length
         ? `Файлы: ${files.length} шт.`
         : "Ничего";
-      currentChat.unreadMessagesCount += 1;
       await currentChat.save();
 
       return newMessage;
@@ -158,8 +157,9 @@ export class ChatService {
     const unreadMessages = await MessageModel.find({
       chatId,
       recipientId: userId,
+      isRead: false,
     });
-
+    console.log("read: ", unreadMessages);
     Promise.all(
       unreadMessages.map(async (message: any) => {
         message.isRead = true;
@@ -167,7 +167,6 @@ export class ChatService {
       })
     );
 
-    currentChat.unreadMessagesCount = 0;
     await currentChat.save();
   }
 }

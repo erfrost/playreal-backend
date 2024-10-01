@@ -65,7 +65,6 @@ export class SupportService {
       else {
         currentChat = await SupportChatModel.create({
           userId: senderId,
-          unreadMessagesCount: 0,
           lastMessage: "",
         });
       }
@@ -82,7 +81,6 @@ export class SupportService {
       });
 
       currentChat.lastMessage = message;
-      currentChat.unreadMessagesCount += 1;
       await currentChat.save();
 
       return { newMessage, userId: currentChat.userId };

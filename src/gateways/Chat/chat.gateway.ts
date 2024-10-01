@@ -14,14 +14,14 @@ const setupChatSocketIO = (io: Server) => {
       return;
     }
 
-    ChatService.updateOnlineStatus(io, client, userId, true);
+    ChatService.updateOnlineStatus(chatIo, client, userId, true);
 
     if (!ChatService.getClient(client.id)) {
       ChatService.addClient(client.id, userId);
     }
 
     client.on("disconnect", () => {
-      ChatService.updateOnlineStatus(io, client, userId, false);
+      ChatService.updateOnlineStatus(chatIo, client, userId, false);
       ChatService.removeClient(client.id);
       client.disconnect(true);
     });
@@ -43,7 +43,7 @@ const setupChatSocketIO = (io: Server) => {
       client.emit("message", newMessage);
 
       recipientSocketIds.map((socketId: string) =>
-        io.to(socketId).emit("message", newMessage)
+        chatIo.to(socketId).emit("message", newMessage)
       );
     });
 

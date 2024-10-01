@@ -4,6 +4,7 @@ import { RequestWithUser } from "../interfaces";
 import ChatModel from "../models/Chat.model";
 import UserModel from "../models/User.model";
 import MessageModel from "../models/Message.model";
+import { Types } from "mongoose";
 
 const router: Router = express.Router({ mergeParams: true });
 
@@ -92,6 +93,49 @@ router.get("/messages/:chatId", authMiddleware, async (req, res) => {
 
     res.status(200).json({ messages });
   } catch (error) {
+    res
+      .status(500)
+      .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
+  }
+});
+
+router.get("/unreadMessagesCount/:chatId", authMiddleware, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const chatId: string = req.params.chatId;
+
+    const currentUser = await UserModel.findById(user._id).select(
+      "nickname avatar_url"
+    );
+    if (!currentUser) {
+      return res.status(500).json({ message: "Пользователь не найден" });
+    }
+    if (!chatId) {
+      return res.status(500).json({ message: "Чат не найден" });
+    }
+
+    const currentChat = await ChatModel.findById(chatId);
+
+    const chatUsers: string[] | undefined = currentChat?.users
+      ? currentChat.users.map((user) => user.toString())
+      : undefined;
+    if (
+      !currentChat ||
+      !chatUsers ||
+      !chatUsers.includes(currentUser._id.toString())
+    ) {
+      return res.status(500).json({ message: "Чат не найден" });
+    }
+
+    const unreadMessagesCount: number = await MessageModel.countDocuments({
+      chatId: currentChat._id,
+      recipientId: currentUser._id,
+      isRead: false,
+    });
+
+    res.status(200).json({ unreadMessagesCount });
+  } catch (error) {
+    console.log(error);
     res
       .status(500)
       .json({ message: "На сервере произошла ошибка. Попробуйте позже" });

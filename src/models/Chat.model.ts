@@ -12,10 +12,6 @@ const schema = new Schema(
         message: "В чате допустимо только 2 пользователя",
       },
     },
-    unreadMessagesCount: {
-      type: Number,
-      required: true,
-    },
     lastMessage: {
       type: String,
     },

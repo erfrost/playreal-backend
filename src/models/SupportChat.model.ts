@@ -7,10 +7,6 @@ const schema = new Schema(
       ref: "User",
       required: true,
     },
-    unreadMessagesCount: {
-      type: Number,
-      required: true,
-    },
     lastMessage: {
       type: String,
     },
