@@ -23,6 +23,7 @@ interface File {
 router.post("/uploadImage", imagesUpload.single("image"), async (req, res) => {
   try {
     const file: File | undefined = req.file;
+    console.log("file: ", file);
     if (!file) {
       return res.status(500).json({ message: "Файл не был загружен" });
     }
