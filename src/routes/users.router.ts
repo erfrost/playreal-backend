@@ -140,9 +140,6 @@ router.get(
 router.get("/userId", authMiddleware, async (req: Request, res: Response) => {
   try {
     const user = (req as RequestWithUser).user;
-    if (!user || !user._id) {
-      return res.status(400).json({ message: "Пользователь не найден" });
-    }
 
     const currentUser = await UserModel.findOne({
       _id: user._id,

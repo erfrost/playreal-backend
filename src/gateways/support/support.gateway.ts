@@ -24,6 +24,10 @@ const setupSupportSocketIO = (io: Server) => {
 
     client.on("message", async (message: string) => {
       const senderId: string = client.handshake.query.userId as string;
+      if (!senderId) {
+        client.disconnect(true);
+        return;
+      }
 
       const { newMessage, userId }: any = await SupportService.createMessage(
         client,

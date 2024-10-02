@@ -12,9 +12,6 @@ const router: Router = express.Router({ mergeParams: true });
 router.get("/messages", authMiddleware, async (req, res) => {
   try {
     const user = (req as RequestWithUser).user;
-    if (!user || !user._id) {
-      return res.status(400).json({ message: "Пользователь не найден" });
-    }
 
     const currentUser = await UserModel.findById(user._id);
     if (!currentUser) {

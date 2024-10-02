@@ -28,6 +28,10 @@ const setupChatSocketIO = (io: Server) => {
 
     client.on("message", async (message: MessageDto) => {
       const senderId: string = client.handshake.query.userId as string;
+      if (!senderId) {
+        client.disconnect(true);
+        return;
+      }
 
       const newMessage = await ChatService.createMessage(
         client,
