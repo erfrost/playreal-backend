@@ -8,7 +8,6 @@ import setupChatSocketIO from "./gateways/chats/chat.gateway";
 import { Server } from "socket.io";
 import setupSupportSocketIO from "./gateways/support/support.gateway";
 dotenv.config();
-//
 
 const app: Application = express();
 
