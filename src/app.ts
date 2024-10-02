@@ -15,7 +15,7 @@ const app: Application = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
-app.use("/images/", express.static(path.join(__dirname, "/images")));
+app.use("/images/", express.static("./images"));
 // app.use("/audios/", express.static("./audios"));
 
 mongoose.set("strictQuery", false);

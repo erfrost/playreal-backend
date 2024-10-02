@@ -1,12 +1,11 @@
 import multer from "multer";
-import path from "path";
 import slugify from "slugify";
 import { v4 as uuidv4 } from "uuid";
 
 // imag
 const imagesStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "/images"));
+    cb(null, "./images");
   },
   filename: (req, file, cb) => {
     const uniqueFilename = `${uuidv4()}-${slugify(file.originalname)}`;
