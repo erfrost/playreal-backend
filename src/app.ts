@@ -7,6 +7,7 @@ import http from "http";
 import setupChatSocketIO from "./gateways/chats/chat.gateway";
 import { Server } from "socket.io";
 import setupSupportSocketIO from "./gateways/support/support.gateway";
+import path from "path";
 dotenv.config();
 
 const app: Application = express();
@@ -14,7 +15,7 @@ const app: Application = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
-app.use("/images/", express.static("./images"));
+app.use("/images/", express.static(path.join(__dirname, "/images")));
 // app.use("/audios/", express.static("./audios"));
 
 mongoose.set("strictQuery", false);
@@ -27,6 +28,7 @@ app.use((req, res, next) => {
     "Access-Control-Allow-Headers",
     "Origin,X-Requested-With,Content-Type,Accept"
   );
+
   next();
 });
 
