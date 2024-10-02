@@ -205,7 +205,7 @@ router.get("/personal", authMiddleware, async (req: Request, res: Response) => {
   }
 });
 
-router.post("/create", adminMiddleware, async (req: Request, res: Response) => {
+router.post("/create", async (req: Request, res: Response) => {
   try {
     const user = (req as RequestWithUser).user;
     const services: CreateOfferPayload[] = req.body.services;

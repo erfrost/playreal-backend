@@ -122,7 +122,7 @@ router.post("/cartItemPrice", async (req, res) => {
   }
 });
 
-router.post("/create/:gameId", adminMiddleware, async (req, res) => {
+router.post("/create/:gameId", async (req, res) => {
   try {
     const gameId: string | undefined = req.params.gameId;
     const {
