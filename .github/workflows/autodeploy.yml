@@ -17,17 +17,17 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           PASSWORD: ${{ secrets.SSH_PASSWORD }}
         with:
-          host: 147.45.168.75
+          host: 147.79.75.3
           username: root
           port: 22
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            if [ ! -d "/root/server" ]; then 
-              echo "Directory /root/server does not exist. Cloning repository..."
-              git clone https://github.com/erfrost/playreal-backend.git /root/server 
+            if [ ! -d "server" ]; then 
+              echo "Directory "server" does not exist. Cloning repository..."
+              git clone https://github.com/erfrost/playreal-backend.git server
             fi
 
-            cd /root/server && git pull origin main &&
+            cd server && git pull origin main &&
 
             CONTAINER_ID=$(docker ps -q --filter "name=server") &&
 
