@@ -122,7 +122,7 @@ router.post("/cartItemPrice", async (req, res) => {
   }
 });
 
-router.post("/create/:gameId", async (req, res) => {
+router.post("/create/:gameId", adminMiddleware, async (req, res) => {
   try {
     const gameId: string | undefined = req.params.gameId;
     const {
@@ -148,7 +148,6 @@ router.post("/create/:gameId", async (req, res) => {
     }
     if (
       !name ||
-      !params.length ||
       !basePrice ||
       !coefficientMmr ||
       !baseMmrPrice ||
@@ -188,7 +187,8 @@ router.post("/create/:gameId", async (req, res) => {
     await newService.save();
 
     res.status(200).json({ service: newService });
-  } catch {
+  } catch (error) {
+    console.log(error);
     res
       .status(500)
       .json({ message: "На сервере произошла ошибка. Попробуйте позже" });

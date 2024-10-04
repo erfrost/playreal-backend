@@ -62,7 +62,7 @@ router.get("/by_id/:gameId", async (req, res) => {
   }
 });
 
-router.post("/create", async (req, res) => {
+router.post("/create", adminMiddleware, async (req, res) => {
   try {
     const { title, description, image } = req.body;
     if (!title || !description || !image) {

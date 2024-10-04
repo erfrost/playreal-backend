@@ -23,7 +23,7 @@ interface File {
 router.post("/uploadImage", imagesUpload.single("image"), async (req, res) => {
   try {
     const file: File | undefined = req.file;
-    console.log("file: ", file);
+
     if (!file) {
       return res.status(500).json({ message: "Файл не был загружен" });
     }
@@ -31,7 +31,8 @@ router.post("/uploadImage", imagesUpload.single("image"), async (req, res) => {
     const path: string = process.env.BASE_IMAGES_URL + file.filename;
 
     res.status(200).json({ image_url: path });
-  } catch {
+  } catch (error: any) {
+    console.log(error);
     res
       .status(500)
       .json({ message: "На сервере произошла ошибка. Попробуйте позже" });

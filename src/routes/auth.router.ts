@@ -235,7 +235,9 @@ router.post("/oauth/discord-exchange", async (req, res) => {
       res.status(200).json({ userId: isExistingUser._id, ...tokens });
     }
   } catch (error: any) {
-    res.status(500).json({ message: error });
+    res
+      .status(500)
+      .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
   }
 });
 
@@ -299,7 +301,9 @@ router.post("/signUp", async (req, res) => {
 
     res.status(200).json({ userId: newUser._id, ...tokens });
   } catch (error) {
-    res.status(500).json({ message: error });
+    res
+      .status(500)
+      .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
   }
 });
 
@@ -326,7 +330,7 @@ router.post("/signIn", async (req, res) => {
       currentUser.password as string
     );
     if (!isPasswordEqual) {
-      return res.status(201).send({
+      return res.status(400).send({
         message: "Неверный email или пароль",
       });
     }
@@ -336,7 +340,51 @@ router.post("/signIn", async (req, res) => {
 
     res.status(200).send({ ...tokens, userId: currentUser._id });
   } catch (error) {
-    res.status(500).json({ message: error });
+    res
+      .status(500)
+      .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
+  }
+});
+
+router.post("/adminSignIn", async (req, res) => {
+  try {
+    const { email, password }: SignInPayload = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Не все поля заполнены" });
+    }
+
+    const currentUser = await UserModel.findOne({
+      email,
+    });
+    if (
+      !currentUser ||
+      !currentUser.password ||
+      currentUser.email !== "toxicbikini@gmail.com"
+    ) {
+      return res.status(400).json({
+        message: "Неверный email, пароль или роль",
+      });
+    }
+
+    const isPasswordEqual = await bcrypt.compare(
+      password,
+      currentUser.password as string
+    );
+    if (!isPasswordEqual) {
+      return res.status(400).send({
+        message: "Неверный email или пароль",
+      });
+    }
+
+    const tokens = TokenService.generate({ _id: currentUser._id });
+    await TokenService.save(currentUser._id.toString(), tokens.refresh_token);
+
+    res.status(200).send({ ...tokens, userId: currentUser._id });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "На сервере произошла ошибка. Попробуйте позже" });
   }
 });
 
